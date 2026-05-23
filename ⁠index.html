@@ -1,1 +1,173 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Secure Gateway</title>
+    <style>
+        body {
+            background-color: #0f0f12;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #1a1a24;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            border: 1px solid #2d2d3f;
+        }
+        h1 { color: #ff5252; font-size: 26px; margin-bottom: 15px; }
+        p { color: #b0b0c0; font-size: 16px; line-height: 1.5; }
+        
+        /* Form Styling */
+        .form-group { text-align: left; margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #a0a0b0; font-weight: 600; }
+        input {
+            width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #3d3d5c;
+            background: #12121a; color: #fff; font-size: 16px; box-sizing: border-box;
+        }
+        input:focus { border-color: #ff5252; outline: none; }
+        
+        /* Video Container */
+        .video-container {
+            position: relative; padding-bottom: 56.25%; height: 0;
+            overflow: hidden; border-radius: 12px; margin: 25px 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        
+        /* Buttons & Results */
+        .btn {
+            display: inline-block; background-color: #ff5252; color: #fff;
+            padding: 14px 30px; font-size: 16px; font-weight: bold; text-decoration: none;
+            border-radius: 30px; border: none; cursor: pointer; transition: 0.2s ease-in-out; width: 100%;
+        }
+        .btn:hover { background-color: #ff3333; transform: translateY(-2px); }
+        .btn-success { background-color: #00e676; color: #000; }
+        .btn-success:hover { background-color: #00c853; }
+        
+        .result-box {
+            margin-top: 25px; padding: 15px; background: #12121a;
+            border-radius: 8px; border: 1px dashed #444466; display: none;
+        }
+        .generated-url { color: #00e676; font-family: monospace; word-break: break-all; font-size: 14px; }
+        
+        .hidden { display: none !important; }
+        #timer { font-size: 22px; font-weight: bold; color: #ffd700; }
+    </style>
+</head>
+<body>
+
+<!-- VIEW 1: CREATOR DASHBOARD -->
+<div id="creator-view" class="container">
+    <h1>🔗 Rickroll Link Generator</h1>
+    <p>Create a masked link. When users click it, they will be forced to sit through a Rickroll to unlock the final destination.</p>
+    <hr style="border: 0; border-top: 1px solid #2d2d3f; margin: 20px 0;">
+    
+    <div class="form-group">
+        <label for="target-url">Target Link (The Real Destination)</label>
+        <input type="url" id="target-url" placeholder="https://example.com/your-secret-file" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="timer-delay">Watch Duration (Seconds)</label>
+        <input type="number" id="timer-delay" value="15" min="5" max="60">
+    </div>
+    
+    <button class="btn" onclick="generateLink()">Generate Prank Link</button>
+    
+    <div id="result" class="result-box">
+        <p style="margin: 0 0 10px 0; font-weight: bold; color: #fff;">Share this link with your target:</p>
+        <p class="generated-url" id="output-url"></p>
+        <button class="btn btn-success" style="margin-top: 10px; padding: 8px 15px; font-size: 14px; width: auto;" onclick="copyLink()">Copy to Clipboard</button>
+    </div>
+</div>
+
+<!-- VIEW 2: PRANK GATEWAY -->
+<div id="gateway-view" class="container hidden">
+    <h1 id="gateway-title">🔒 Content is Locked</h1>
+    <p id="status-text">Complete verification by watching the video sequence for <span id="timer">--</span> seconds.</p>
+    
+    <div class="video-container">
+        <!-- Autoplay active; controls disabled to stop them from skipping -->
+        <iframe id="rickroll-frame" src="" allow="autoplay"></iframe>
+    </div>
+    
+    <a href="#" id="unlock-btn" class="btn btn-success hidden">✨ Access Content ✨</a>
+</div>
+
+<script>
+    // System automatically routes user based on URL contents
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetParam = urlParams.get('target');
+    const timeParam = urlParams.get('time') || 15;
+
+    if (targetParam) {
+        // Run as Gateway Page
+        document.getElementById('creator-view').classList.add('hidden');
+        document.getElementById('gateway-view').classList.remove('hidden');
+        
+        // Decode target destination link safely
+        const finalDestination = atob(targetParam);
+        let timeLeft = parseInt(timeParam);
+        
+        document.getElementById('timer').textContent = timeLeft;
+        
+        // Load video player context
+        const iframe = document.getElementById('rickroll-frame');
+        iframe.src = `https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=0&start=0`;
+
+        const countdown = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                document.getElementById('status-text').innerHTML = "🎉 Destination unlocked successfully.";
+                document.getElementById('gateway-title').textContent = "🔓 Access Granted";
+                
+                const unlockBtn = document.getElementById('unlock-btn');
+                unlockBtn.href = finalDestination;
+                unlockBtn.classList.remove('hidden');
+            }
+        }, 1000);
+
+    } else {
+        // Run as Generator Dashboard View
+        // No action required, standard HTML loads
+    }
+
+    function generateLink() {
+        const targetUrl = document.getElementById('target-url').value;
+        const duration = document.getElementById('timer-delay').value;
+        
+        if (!targetUrl) {
+            alert('Please input a valid target link.');
+            return;
+        }
+        
+        // Convert to Base64 to conceal URL raw structure from targets
+        const encodedTarget = btoa(targetUrl);
+        const baseUrl = window.location.href.split('?')[0];
+        const prankUrl = `${baseUrl}?target=${encodedTarget}&time=${duration}`;
+        
+        document.getElementById('output-url').textContent = prankUrl;
+        document.getElementById('result').style.display = 'block';
+    }
+
+    function copyLink() {
+        const linkText = document.getElementById('output-url').textContent;
+        navigator.clipboard.writeText(linkText);
+        alert('Prank link copied successfully!');
+    }
+</script>
+
+</body>
+</html>
